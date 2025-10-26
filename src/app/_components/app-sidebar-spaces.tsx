@@ -9,6 +9,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import Link from "next/link";
 
 const spaces = [
     {
@@ -29,10 +30,10 @@ export function AppSidebarSpaces() {
                         return (
                             <SidebarMenuItem key={item.title}>
                                 <SidebarMenuButton asChild>
-                                    <a href={item.url}>
+                                    <Link href={item.url}>
                                         <Folder />
                                         <span>{item.title}</span>
-                                    </a>
+                                    </Link>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         );
