@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { EllipsisVertical } from "lucide-react";
 
-type SpacePageProps = {
-    params: { space_id: string };
-};
+
 
 const getNotesBySpaceId = async (spaceId: string) => {
     return {
@@ -39,8 +37,11 @@ const getNotesBySpaceId = async (spaceId: string) => {
     };
 };
 
+type SpacePageProps = {
+    params: Promise<{ space_id: string }>;
+};
 export default async function SpacePage({ params }: SpacePageProps) {
-    const { space_id } = params;
+    const { space_id } = await params;
     const space = await getNotesBySpaceId(space_id);
 
     return (
