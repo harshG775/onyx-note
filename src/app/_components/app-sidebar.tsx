@@ -31,7 +31,7 @@ export function AppSidebar() {
     return (
         <Sidebar>
             <SidebarContent>
-                <SidebarGroup>
+                {/* <SidebarGroup>
                     <SidebarGroupLabel>Onyx Note</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
@@ -47,7 +47,7 @@ export function AppSidebar() {
                             ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
-                </SidebarGroup>
+                </SidebarGroup> */}
                 {/*  */}
                 <AppSidebarSpaces />
                 {/*  */}

@@ -23,6 +23,10 @@ const getSpaces = () => {
             title: "Office Workspace",
             id: "469f18d0-a58c-4145-9faa-04004d56e259",
         },
+        {
+            title: "Personal Notes",
+            id: "469f18d0-a58c-4145-9faa-123456789abc",
+        },
     ];
 };
 export function AppSidebarSpaces() {
@@ -30,8 +34,10 @@ export function AppSidebarSpaces() {
     const pathname = usePathname();
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>Spaces</SidebarGroupLabel>
-            <SidebarGroupAction title="Add Space">
+            <SidebarGroupLabel>
+                <Link href={`/spaces`}>Spaces</Link>
+            </SidebarGroupLabel>
+            <SidebarGroupAction title="Add Space" className="cursor-pointer">
                 <Plus /> <span className="sr-only">Add Space</span>
             </SidebarGroupAction>
             <SidebarGroupContent>
