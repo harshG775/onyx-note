@@ -11,13 +11,16 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 
-const spaces = [
-    {
-        title: "My Workspace",
-        id: "469f18d0-a58c-4145-9faa-6e25904004d5",
-    },
-];
+const getSpaces = () => {
+    return [
+        {
+            title: "My Workspace",
+            id: "469f18d0-a58c-4145-9faa-6e25904004d5",
+        },
+    ];
+};
 export function AppSidebarSpaces() {
+    const spaces = getSpaces();
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Spaces</SidebarGroupLabel>
