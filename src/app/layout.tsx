@@ -27,13 +27,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-                <SidebarProvider>
-                    <AppSidebar />
-                    <main className="flex-1 relative">
-                        <SidebarTrigger className="sticky top-0 left-0"/>
-                        {children}
-                    </main>
-                </SidebarProvider>
+                {children}
             </body>
         </html>
     );
