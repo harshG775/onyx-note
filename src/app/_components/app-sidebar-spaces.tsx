@@ -1,6 +1,6 @@
 "use client";
-import { Folder, FolderOpen, Plus } from "lucide-react";
 
+import { Folder, FolderOpen, Plus } from "lucide-react";
 import {
     SidebarGroup,
     SidebarGroupAction,
@@ -12,50 +12,109 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
-const getSpaces = () => {
-    return [
-        {
-            title: "My Workspace",
-            id: "469f18d0-a58c-4145-9faa-6e25904004d5",
+// ---------- Create Space Dialog ----------
+function CreateSpaceDialog() {
+    const [title, setTitle] = useState("");
+    const [open, setOpen] = useState(false);
+    const queryClient = useQueryClient();
+
+    const createSpace = useMutation({
+        mutationFn: async () => {
+            const res = await fetch("/api/spaces", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title }),
+            });
+            if (!res.ok) throw new Error("Failed to create space");
+            return res.json();
         },
-        {
-            title: "Office Workspace",
-            id: "469f18d0-a58c-4145-9faa-04004d56e259",
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["spaces"] });
+            setTitle("");
+            setOpen(false);
         },
-        {
-            title: "Personal Notes",
-            id: "469f18d0-a58c-4145-9faa-123456789abc",
-        },
-    ];
-};
+    });
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Plus />
+                    <span className="sr-only">Add Space</span>
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Create new space</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3 mt-2">
+                    <Input placeholder="Enter space title" value={title} onChange={(e) => setTitle(e.target.value)} />
+                    <Button
+                        className="w-full"
+                        disabled={!title || createSpace.isPending}
+                        onClick={() => createSpace.mutate()}
+                    >
+                        {createSpace.isPending ? "Creating..." : "Create Space"}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+// ---------- Main Sidebar ----------
 export function AppSidebarSpaces() {
-    const spaces = getSpaces();
     const pathname = usePathname();
+
+    const { data, isLoading } = useQuery({
+        queryKey: ["spaces"],
+        queryFn: async () => {
+            const res = await fetch("/api/spaces");
+            if (!res.ok) throw new Error("Failed to fetch spaces");
+            const data = await res.json();
+            return data.data;
+        },
+    });
+
+    const spaces = data || [];
+
     return (
         <SidebarGroup>
-            <SidebarGroupLabel>
-                <Link href={`/spaces`}>Spaces</Link>
-            </SidebarGroupLabel>
-            <SidebarGroupAction title="Add Space" className="cursor-pointer">
-                <Plus /> <span className="sr-only">Add Space</span>
-            </SidebarGroupAction>
+            <div className="flex items-center justify-between">
+                <SidebarGroupLabel>
+                    <Link href={`/spaces`}>Spaces</Link>
+                </SidebarGroupLabel>
+                <SidebarGroupAction title="Add Space" className="cursor-pointer" asChild>
+                    <CreateSpaceDialog />
+                </SidebarGroupAction>
+            </div>
+
             <SidebarGroupContent>
-                <SidebarMenu>
-                    {spaces.map((item) => {
-                        const isActive = pathname.includes(`/spaces/${item.id}`);
-                        return (
-                            <SidebarMenuItem key={item.title}>
-                                <SidebarMenuButton asChild isActive={isActive}>
-                                    <Link href={`/spaces/${item.id}`}>
-                                        {isActive ? <FolderOpen /> : <Folder />}
-                                        <span>{item.title}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        );
-                    })}
-                </SidebarMenu>
+                {isLoading ? (
+                    <p className="text-sm text-muted-foreground p-2">Loading...</p>
+                ) : (
+                    <SidebarMenu>
+                        {spaces.map((item: any) => {
+                            const isActive = pathname.includes(`/spaces/${item.id}`);
+                            return (
+                                <SidebarMenuItem key={item.id}>
+                                    <SidebarMenuButton asChild isActive={isActive}>
+                                        <Link href={`/spaces/${item.id}`}>
+                                            {isActive ? <FolderOpen /> : <Folder />}
+                                            <span>{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            );
+                        })}
+                    </SidebarMenu>
+                )}
             </SidebarGroupContent>
         </SidebarGroup>
     );
