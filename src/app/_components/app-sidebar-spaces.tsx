@@ -1,6 +1,6 @@
 "use client";
 
-import { Folder, FolderOpen, Plus } from "lucide-react";
+import { Folder, FolderOpen, Plus, Trash2 } from "lucide-react";
 import {
     SidebarGroup,
     SidebarGroupAction,
@@ -68,6 +68,31 @@ function CreateSpaceDialog() {
     );
 }
 
+function DeleteSpaceButton({ id }: { id: string }) {
+    const queryClient = useQueryClient();
+    const deleteSpace = useMutation({
+        mutationFn: async () => {
+            const res = await fetch(`/api/spaces/${id}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("Failed to delete space");
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["spaces"] });
+        },
+    });
+
+    return (
+        <button
+            onClick={() => deleteSpace.mutate()}
+            disabled={deleteSpace.isPending}
+            className="text-muted-foreground hover:text-destructive transition"
+            title="Delete space"
+        >
+            <Trash2 size={16} />
+        </button>
+    );
+}
+
 // ---------- Main Sidebar ----------
 export function AppSidebarSpaces() {
     const pathname = usePathname();
@@ -103,13 +128,14 @@ export function AppSidebarSpaces() {
                         {spaces.map((item: any) => {
                             const isActive = pathname.includes(`/spaces/${item.id}`);
                             return (
-                                <SidebarMenuItem key={item.id}>
+                                <SidebarMenuItem key={item.id} className="flex">
                                     <SidebarMenuButton asChild isActive={isActive}>
                                         <Link href={`/spaces/${item.id}`}>
                                             {isActive ? <FolderOpen /> : <Folder />}
                                             <span>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
+                                    <DeleteSpaceButton id={item.id} />
                                 </SidebarMenuItem>
                             );
                         })}
