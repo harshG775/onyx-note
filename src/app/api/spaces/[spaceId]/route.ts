@@ -5,8 +5,10 @@ import { space } from "@/db/drizzle/schemas";
 import { db } from "@/db/drizzle";
 
 // ---------- GET BY ID ----------
-export async function GET(req: Request, { params }: { params: { spaceId: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ spaceId: string }> }) {
     try {
+        const { spaceId } = await context.params;
+
         const session = await auth.api.getSession(req);
         const user = session?.user;
         if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -14,7 +16,7 @@ export async function GET(req: Request, { params }: { params: { spaceId: string 
         const [result] = await db
             .select()
             .from(space)
-            .where(and(eq(space.id, params.spaceId), eq(space.userId, user.id)));
+            .where(and(eq(space.id, spaceId), eq(space.userId, user.id)));
 
         if (!result) return NextResponse.json({ message: "Space not found" }, { status: 404 });
 
@@ -26,8 +28,10 @@ export async function GET(req: Request, { params }: { params: { spaceId: string 
 }
 
 // ---------- UPDATE BY ID ----------
-export async function PATCH(req: Request, { params }: { params: { spaceId: string } }) {
+export async function PATCH(req: Request, context: { params: Promise<{ spaceId: string }> }) {
     try {
+        const { spaceId } = await context.params;
+
         const session = await auth.api.getSession(req);
         const user = session?.user;
         if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -38,7 +42,7 @@ export async function PATCH(req: Request, { params }: { params: { spaceId: strin
         const [updated] = await db
             .update(space)
             .set({ title })
-            .where(and(eq(space.id, params.spaceId), eq(space.userId, user.id)))
+            .where(and(eq(space.id, spaceId), eq(space.userId, user.id)))
             .returning();
 
         if (!updated) return NextResponse.json({ message: "Space not found" }, { status: 404 });
@@ -51,15 +55,17 @@ export async function PATCH(req: Request, { params }: { params: { spaceId: strin
 }
 
 // ---------- DELETE BY ID ----------
-export async function DELETE(req: Request, { params }: { params: { spaceId: string } }) {
+export async function DELETE(req: Request, context: { params: Promise<{ spaceId: string }> }) {
     try {
+        const { spaceId } = await context.params;
+
         const session = await auth.api.getSession(req);
         const user = session?.user;
         if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         const [deleted] = await db
             .delete(space)
-            .where(and(eq(space.id, params.spaceId), eq(space.userId, user.id)))
+            .where(and(eq(space.id, spaceId), eq(space.userId, user.id)))
             .returning();
 
         if (!deleted) return NextResponse.json({ message: "Space not found" }, { status: 404 });
