@@ -15,8 +15,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { signOutAction } from "../actions/auth-action";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
-export function AppSidebar() {
+export async function AppSidebar() {
+    const session = await auth.api.getSession({
+        headers: await headers(),
+    });
     return (
         <Sidebar>
             <SidebarContent>
@@ -30,7 +37,7 @@ export function AppSidebar() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton>
-                                    <User2 /> Username
+                                    <User2 /> {session?.user.email || "User"}
                                     <ChevronUp className="ml-auto" />
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
@@ -38,8 +45,10 @@ export function AppSidebar() {
                                 <DropdownMenuItem>
                                     <span>Account</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <span>Sign out</span>
+                                <DropdownMenuItem asChild>
+                                    <Button type="submit" onClick={signOutAction}>
+                                        Sign out
+                                    </Button>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
