@@ -10,10 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getSpaces } from "@/lib/api";
 import { Space } from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { EllipsisVertical, Folder, Loader2, Plus } from "lucide-react";
+import { EllipsisVertical, Folder, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { CreateSpaceDialog } from "./_components/CreateDialog";
+import { EditSpaceDialog } from "./_components/EditDialog";
+import { useState } from "react";
 
 const SpaceSkeleton = () => {
     return (
@@ -27,6 +28,65 @@ const SpaceSkeleton = () => {
                     <Skeleton className="h-5 w-3/4" />
                 </div>
             ))}
+        </div>
+    );
+};
+
+const SpaceItem = ({
+    space,
+    handleDelete,
+    isDeleting,
+}: {
+    space: Space;
+    handleDelete: (id: string) => void;
+    isDeleting: boolean;
+}) => {
+    const [isEditing, setIsEditing] = useState(false);
+
+    return (
+        <div
+            key={space.id}
+            className={`group relative bg-card border rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-shadow ${
+                isDeleting ? "opacity-50 pointer-events-none" : ""
+            }`}
+        >
+            <div className="flex items-center justify-between mb-3">
+                <Folder className="w-8 h-8 text-primary/80 group-hover:text-primary transition-colors" />
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger>
+                        <EllipsisVertical className="w-5 h-5 text-muted-foreground" />
+                        <span className="sr-only">Options</span>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent side="right" align="start">
+                        <DropdownMenuItem
+                            onSelect={(e) => {
+                                e.preventDefault();
+                                setIsEditing(true);
+                            }}
+                        >
+                            <span>Edit</span>
+                        </DropdownMenuItem>
+
+                        <EditSpaceDialog open={isEditing} setOpen={setIsEditing} space={space} />
+                        <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onSelect={(e) => {
+                                e.preventDefault();
+                                handleDelete(space.id);
+                            }}
+                        >
+                            {isDeleting ? <Loader2 className="animate-spin text-destructive" /> : null}
+                            <span>{isDeleting ? "Deleting..." : "Delete"}</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+
+            <Link href={`/spaces/${space.id}`} className="block mt-auto">
+                <h2 className="font-semibold text-lg group-hover:underline leading-tight">{space.title}</h2>
+            </Link>
         </div>
     );
 };
@@ -51,49 +111,14 @@ const SpacesSection = ({ spaces }: { spaces: Space[] }) => {
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {spaces?.map((space) => {
-                return (
-                    <div
-                        key={space.id}
-                        className={`group relative bg-card border rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition-shadow ${
-                            deleteSpace.isPending ? "opacity-50 pointer-events-none" : ""
-                        }`}
-                    >
-                        <div className="flex items-center justify-between mb-3">
-                            <Folder className="w-8 h-8 text-primary/80 group-hover:text-primary transition-colors" />
-
-                            <DropdownMenu>
-                                <DropdownMenuTrigger>
-                                    <EllipsisVertical className="w-5 h-5 text-muted-foreground" />
-                                    <span className="sr-only">Options</span>
-                                </DropdownMenuTrigger>
-
-                                <DropdownMenuContent side="right" align="start">
-                                    <DropdownMenuItem onClick={() => alert("Edit feature coming soon")}>
-                                        <span>Edit</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        className="text-destructive focus:text-destructive"
-                                        onSelect={(e) => {
-                                            e.preventDefault();
-                                            handleDelete(space.id);
-                                        }}
-                                    >
-                                        {deleteSpace.isPending ? (
-                                            <Loader2 className="animate-spin text-destructive" />
-                                        ) : null}
-                                        <span>{deleteSpace.isPending ? "Deleting..." : "Delete"}</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-
-                        <Link href={`/spaces/${space.id}`} className="block mt-auto">
-                            <h2 className="font-semibold text-lg group-hover:underline leading-tight">{space.title}</h2>
-                        </Link>
-                    </div>
-                );
-            })}
+            {spaces?.map((space) => (
+                <SpaceItem
+                    key={space.id}
+                    space={space}
+                    handleDelete={handleDelete}
+                    isDeleting={deleteSpace.isPending}
+                />
+            ))}
         </div>
     );
 };
